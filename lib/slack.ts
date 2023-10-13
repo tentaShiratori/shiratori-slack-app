@@ -30,10 +30,10 @@ export interface SlackRequestVerificationOptions {
  * Verifies the signature of an incoming request from Slack.
  * If the request is invalid, this method throws an exception with the error details.
  */
-export function verifySlackRequest(options: VercelRequest): void {
-  const requestTimestampSecHeader =
-    options.headers["x-slack-request-timestamp"];
-  const signature = options.headers["x-slack-signature"];
+export function verifySlackRequest(req: VercelRequest): void {
+  const requestTimestampSecHeader = req.headers["x-slack-request-timestamp"];
+  const signature = req.headers["x-slack-signature"];
+  console.log(req.headers);
   if (Number.isNaN(requestTimestampSecHeader)) {
     throw new Error(
       `${verifyErrorPrefix}: header x-slack-request-timestamp did not have the expected type (${requestTimestampSecHeader})`
@@ -71,7 +71,7 @@ export function verifySlackRequest(options: VercelRequest): void {
   }
   // Compute our own signature hash
   const hmac = createHmac("sha256", process.env.SLACK_SIGNING_SECRET ?? "");
-  hmac.update(`${signatureVersion}:${requestTimestampSec}:${options.body}`);
+  hmac.update(`${signatureVersion}:${requestTimestampSec}:${req.body}`);
   const ourSignatureHash = hmac.digest("hex");
   if (!signatureHash || !tsscmp(signatureHash, ourSignatureHash)) {
     throw new Error(`${verifyErrorPrefix}: signature mismatch`);
@@ -82,9 +82,9 @@ export function verifySlackRequest(options: VercelRequest): void {
  * Verifies the signature of an incoming request from Slack.
  * If the request is invalid, this method returns false.
  */
-export function isValidSlackRequest(options: VercelRequest): boolean {
+export function isValidSlackRequest(req: VercelRequest): boolean {
   try {
-    verifySlackRequest(options);
+    verifySlackRequest(req);
     return true;
   } catch (e) {
     console.log(`Signature verification error: ${e}`);
