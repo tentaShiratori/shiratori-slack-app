@@ -2,6 +2,7 @@ import pkg from "@slack/bolt";
 import { VercelRequest } from "@vercel/node";
 import { createHmac } from "crypto";
 import tsscmp from "tsscmp";
+import { bodyParser } from "./api/bodyParser";
 
 const { App } = pkg;
 
@@ -30,9 +31,10 @@ export interface SlackRequestVerificationOptions {
  * Verifies the signature of an incoming request from Slack.
  * If the request is invalid, this method throws an exception with the error details.
  */
-export function verifySlackRequest(req: VercelRequest): void {
+export async function verifySlackRequest(req: VercelRequest): Promise<void> {
   const requestTimestampSecHeader = req.headers["x-slack-request-timestamp"];
   const signature = req.headers["x-slack-signature"];
+  console.log(req.headers);
   if (Number.isNaN(requestTimestampSecHeader)) {
     throw new Error(
       `${verifyErrorPrefix}: header x-slack-request-timestamp did not have the expected type (${requestTimestampSecHeader})`
@@ -71,7 +73,9 @@ export function verifySlackRequest(req: VercelRequest): void {
   // Compute our own signature hash
   const hmac = createHmac("sha256", process.env.SLACK_SIGNING_SECRET ?? "");
   hmac.update(
-    `${signatureVersion}:${requestTimestampSec}:${JSON.stringify(req.body)}`
+    `${signatureVersion}:${requestTimestampSec}:${(
+      await bodyParser(req)
+    ).toString()}`
   );
   const ourSignatureHash = hmac.digest("hex");
   if (!signatureHash || !tsscmp(signatureHash, ourSignatureHash)) {
@@ -89,9 +93,6 @@ export function isValidSlackRequest(req: VercelRequest): boolean {
     return true;
   } catch (e) {
     console.log(`Signature verification error: ${e}`);
-    if (e instanceof Error) {
-      console.log(e.stack);
-    }
   }
   return false;
 }
