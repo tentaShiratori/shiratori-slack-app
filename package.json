@@ -2,6 +2,9 @@
   "name": "shiratori-slack-app",
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "start":"vercel dev"
+  },
   "devDependencies": {
     "bun-types": "latest"
   },
@@ -9,6 +12,8 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@vercel/node": "^3.0.7"
+    "@slack/bolt": "^3.14.0",
+    "@vercel/node": "^3.0.7",
+    "vercel": "^32.4.1"
   }
 }
