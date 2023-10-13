@@ -2,7 +2,7 @@ import pkg from "@slack/bolt";
 import { VercelRequest } from "@vercel/node";
 import { createHmac } from "crypto";
 import tsscmp from "tsscmp";
-import { bodyParser } from "./api/bodyParser";
+import { bodyParser } from "./api/bodyParser.js";
 
 const { App } = pkg;
 
