@@ -1,4 +1,4 @@
-import type { Readable } from "node:stream";
+import type { Readable } from "stream";
 
 export async function bodyParser(readable: Readable) {
   const chunks = [];
