@@ -33,7 +33,6 @@ export interface SlackRequestVerificationOptions {
 export function verifySlackRequest(req: VercelRequest): void {
   const requestTimestampSecHeader = req.headers["x-slack-request-timestamp"];
   const signature = req.headers["x-slack-signature"];
-  console.log(req.headers);
   if (Number.isNaN(requestTimestampSecHeader)) {
     throw new Error(
       `${verifyErrorPrefix}: header x-slack-request-timestamp did not have the expected type (${requestTimestampSecHeader})`
@@ -88,6 +87,9 @@ export function isValidSlackRequest(req: VercelRequest): boolean {
     return true;
   } catch (e) {
     console.log(`Signature verification error: ${e}`);
+    if (e instanceof Error) {
+      console.log(e.stack);
+    }
   }
   return false;
 }
