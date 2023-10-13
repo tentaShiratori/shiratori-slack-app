@@ -72,9 +72,7 @@ export async function verifySlackRequest(req: VercelRequest): Promise<void> {
   // Compute our own signature hash
   const hmac = createHmac("sha256", process.env.SLACK_SIGNING_SECRET ?? "");
   hmac.update(
-    `${signatureVersion}:${requestTimestampSec}:${(
-      await bodyParser(req)
-    ).toString()}`
+    `${signatureVersion}:${requestTimestampSec}:${await bodyParser(req)}`
   );
   const ourSignatureHash = hmac.digest("hex");
   if (!signatureHash || !tsscmp(signatureHash, ourSignatureHash)) {
@@ -86,9 +84,11 @@ export async function verifySlackRequest(req: VercelRequest): Promise<void> {
  * Verifies the signature of an incoming request from Slack.
  * If the request is invalid, this method returns false.
  */
-export function isValidSlackRequest(req: VercelRequest): boolean {
+export async function isValidSlackRequest(
+  req: VercelRequest
+): Promise<boolean> {
   try {
-    verifySlackRequest(req);
+    await verifySlackRequest(req);
     return true;
   } catch (e) {
     console.log(`Signature verification error: ${e}`);

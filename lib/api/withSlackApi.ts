@@ -1,7 +1,6 @@
 import { VercelApiHandler, VercelRequest, VercelResponse } from "@vercel/node";
 import { isValidSlackRequest } from "../slack.js";
 import { isDevelopment } from "../constant.js";
-import { validateSlackRequest } from "./validateSlackRequest.js";
 
 /**
  * slackからのrequestか検証する
@@ -18,11 +17,12 @@ import { validateSlackRequest } from "./validateSlackRequest.js";
  * @returns
  */
 export function withSlackApi(fn: VercelApiHandler) {
-  return function handler(req: VercelRequest, res: VercelResponse) {
-    if (!isDevelopment && !validateSlackRequest(req)) {
+  return async function handler(req: VercelRequest, res: VercelResponse) {
+    if (!isDevelopment && !(await isValidSlackRequest(req))) {
       res.status(403).json("Forbidden");
       return;
     }
-    return fn(req, res);
+    fn(req, res);
+    return;
   };
 }
