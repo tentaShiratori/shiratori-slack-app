@@ -10,6 +10,6 @@ export default withSlackApi(async function handler(
     channel: "C060MDTT9QX",
     text: "test message",
   });
-  res.json(null);
+  res.json("success");
   return;
 });
