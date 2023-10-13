@@ -25,8 +25,7 @@ export function withSlackApi(fn: VercelApiHandler) {
       res.status(403).json("Forbidden");
       return;
     }
-    console.log(body.toString());
-    req.body = JSON.parse(body.toString());
+    req.body = body.toString();
     fn(req, res);
     return;
   };
