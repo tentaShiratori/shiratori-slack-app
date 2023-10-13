@@ -1,16 +1,15 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node'
-import pkg from '@slack/bolt';
-const { App } = pkg;
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { slack } from "../lib/slack.js";
+import { withSlackApi } from "../lib/api/withSlackApi.js";
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const app = new App({
-    token:process.env.SLACK_BOT_TOKEN,
-    signingSecret:process.env.SLACK_SIGNING_SECRET
-  })
-
-  await app.client.chat.postMessage({
-    channel:"C060MDTT9QX",
-    text:"test message"
-  })
-  return res.json("Hello World")
-}
+export default withSlackApi(async function handler(
+  _: VercelRequest,
+  res: VercelResponse
+) {
+  await slack.client.chat.postMessage({
+    channel: "C060MDTT9QX",
+    text: "test message",
+  });
+  res.json(null);
+  return;
+});
