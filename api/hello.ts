@@ -12,6 +12,8 @@ export default withSlackApi(async function handler(
   _: VercelRequest,
   res: VercelResponse
 ) {
+  console.log("body", _.body);
+  console.log("query", _.query);
   await slack.client.chat.postMessage({
     channel: "C060MDTT9QX",
     text: "test message",

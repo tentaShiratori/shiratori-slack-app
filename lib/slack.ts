@@ -2,7 +2,6 @@ import pkg from "@slack/bolt";
 import { VercelRequest } from "@vercel/node";
 import { createHmac } from "crypto";
 import tsscmp from "tsscmp";
-import { bodyParser } from "./stream.js";
 
 const { App } = pkg;
 
@@ -17,21 +16,11 @@ export const slack = new App({
 
 const verifyErrorPrefix = "Failed to verify authenticity";
 
-export interface SlackRequestVerificationOptions {
-  signingSecret: string;
-  body: string;
-  headers: {
-    "x-slack-signature": string;
-    "x-slack-request-timestamp": number;
-  };
-  nowMilliseconds?: number;
-}
-
 /**
  * Verifies the signature of an incoming request from Slack.
  * If the request is invalid, this method throws an exception with the error details.
  */
-export async function verifySlackRequest(req: VercelRequest): Promise<void> {
+export function verifySlackRequest(req: VercelRequest): void {
   const requestTimestampSecHeader = req.headers["x-slack-request-timestamp"];
   const signature = req.headers["x-slack-signature"];
   if (Number.isNaN(requestTimestampSecHeader)) {
@@ -71,9 +60,7 @@ export async function verifySlackRequest(req: VercelRequest): Promise<void> {
   }
   // Compute our own signature hash
   const hmac = createHmac("sha256", process.env.SLACK_SIGNING_SECRET ?? "");
-  hmac.update(
-    `${signatureVersion}:${requestTimestampSec}:${await bodyParser(req)}`
-  );
+  hmac.update(`${signatureVersion}:${requestTimestampSec}:${req.body}`);
   const ourSignatureHash = hmac.digest("hex");
   if (!signatureHash || !tsscmp(signatureHash, ourSignatureHash)) {
     throw new Error(`${verifyErrorPrefix}: signature mismatch`);
@@ -84,11 +71,9 @@ export async function verifySlackRequest(req: VercelRequest): Promise<void> {
  * Verifies the signature of an incoming request from Slack.
  * If the request is invalid, this method returns false.
  */
-export async function isValidSlackRequest(
-  req: VercelRequest
-): Promise<boolean> {
+export function isValidSlackRequest(req: VercelRequest): boolean {
   try {
-    await verifySlackRequest(req);
+    verifySlackRequest(req);
     return true;
   } catch (e) {
     console.log(`Signature verification error: ${e}`);
