@@ -70,7 +70,9 @@ export function verifySlackRequest(req: VercelRequest): void {
   }
   // Compute our own signature hash
   const hmac = createHmac("sha256", process.env.SLACK_SIGNING_SECRET ?? "");
-  hmac.update(`${signatureVersion}:${requestTimestampSec}:${req.body}`);
+  hmac.update(
+    `${signatureVersion}:${requestTimestampSec}:${JSON.stringify(req.body)}`
+  );
   const ourSignatureHash = hmac.digest("hex");
   if (!signatureHash || !tsscmp(signatureHash, ourSignatureHash)) {
     throw new Error(`${verifyErrorPrefix}: signature mismatch`);
